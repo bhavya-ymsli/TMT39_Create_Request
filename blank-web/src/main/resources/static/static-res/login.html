@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Please sign in</title>
+  </head>
+  <body>
+     <div>
+        <h2 >Please sign in</h2>
+        <p>
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Username" required autofocus>
+        </p>
+        <p>
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Password" required>
+        </p>
+        <button type="button" onclick="login()">Sign in</button>
+        <div id="login-error" style="color: red; margin-top: 10px;"></div>
+</div>
+</body>
+  <script>
+  
+    const pathPrefix = location.href.replace(/static-res.*$/, '').replace(/\/$/, '');
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      if (!username || !password) {
+        document.getElementById("login-error").innerText = "Username and password are required.";
+        return;
+      }
+      document.getElementById("login-error").innerText = ""; // clear previous error message 
+
+      // User fetch API to send login request
+      const data = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password);
+      fetch(pathPrefix + "/login_p", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: data
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw response;
+          }
+          const authToken = response.headers.get("X-Auth-Token");
+          if (authToken) {
+              localStorage.setItem("X-Auth-Token", authToken);
+          }
+          window.location.href = pathPrefix + "/static-res/index.html";
+      })
+      .catch(error => {
+          document.getElementById("login-error").innerText = "Failed to login. Please check your username and password. Maybe you can try 'user' as password!'";
+          console.log("Login error:", error.status || error);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+     document.addEventListener('keydown', function(event) {
+        if (event.key === "Enter") {
+          login();
+        }
+      });
+    });
+    
+  </script>
+
+</html>
